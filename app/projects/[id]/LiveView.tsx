@@ -2,7 +2,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { getBrowserSupabase } from '@/src/lib/supabase/client';
 import { computeOverlap, type MemberSnapshot } from '@/src/lib/overlap';
-import type { StatusRow, EventRow } from '@/src/types/db';
+import { matchMemoriesForFiles } from '@/src/lib/memory-core';
+import type { StatusRow, EventRow, MemoryRow } from '@/src/types/db';
 export default function LiveView({ projectId }: { projectId: string }) {
   // One client instance for the whole component — queries AND the realtime channel
   // must share the same authenticated socket, or postgres_changes is evaluated as anon.
@@ -10,13 +11,15 @@ export default function LiveView({ projectId }: { projectId: string }) {
   const [status, setStatus] = useState<StatusRow[]>([]);
   const [events, setEvents] = useState<EventRow[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
+  const [memories, setMemories] = useState<MemoryRow[]>([]);
   const load = useCallback(async () => {
-    const [{ data: s }, { data: e }, { data: m }] = await Promise.all([
+    const [{ data: s }, { data: e }, { data: m }, { data: mem }] = await Promise.all([
       sb.from('member_status').select('*').eq('project_id', projectId).is('ended_at', null),
       sb.from('events').select('*').eq('project_id', projectId).order('ts', { ascending: false }).limit(50),
       sb.from('project_members').select('id, display_name, email').eq('project_id', projectId),
+      sb.from('memory').select('*').eq('project_id', projectId).is('archived_at', null).is('superseded_by', null),
     ]);
-    setStatus(s ?? []); setEvents(e ?? []);
+    setStatus(s ?? []); setEvents(e ?? []); setMemories((mem ?? []) as MemoryRow[]);
     setNames(Object.fromEntries((m ?? []).map((x: { id: string; display_name: string | null; email: string }) => [x.id, x.display_name || x.email])));
   }, [projectId, sb]);
   useEffect(() => {
@@ -29,6 +32,7 @@ export default function LiveView({ projectId }: { projectId: string }) {
       ch = sb.channel(`proj-${projectId}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'member_status', filter: `project_id=eq.${projectId}` }, load)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: `project_id=eq.${projectId}` }, load)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'memory', filter: `project_id=eq.${projectId}` }, load)
         .subscribe();
     })();
     return () => { if (ch) sb.removeChannel(ch); };
@@ -39,12 +43,17 @@ export default function LiveView({ projectId }: { projectId: string }) {
   }));
   const banners = snaps.flatMap((me, i) =>
     computeOverlap({ files: me.files, branch: me.branch }, snaps.slice(i + 1), new Date())
-      .map(a => `${me.displayName} & ${a.displayName} both on ${a.file}`));
+      .map(a => ({ label: `${me.displayName} & ${a.displayName} both on ${a.file}`, file: a.file })));
 
   return (
     <section className="space-y-6">
       {banners.map((b, i) => (
-        <div key={i} className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">⚠️ {b}</div>
+        <div key={i} className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <div>⚠️ {b.label}</div>
+          {matchMemoriesForFiles(memories, [b.file]).slice(0, 3).map(m => (
+            <div key={m.id} className="mt-1 text-xs text-red-700">💡 {m.text}</div>
+          ))}
+        </div>
       ))}
       <div>
         <h2 className="font-medium">Active sessions</h2>

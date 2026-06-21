@@ -3,6 +3,7 @@ import LiveView from './LiveView';
 import InvitePanel from './InvitePanel';
 import InstallCommand from './InstallCommand';
 import Roster from './Roster';
+import MemoryPanel from './MemoryPanel';
 
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -18,6 +19,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
       {me?.token && <InstallCommand token={me.token} />}
       {isOwner && <InvitePanel projectId={id} />}
       {isOwner && <Roster projectId={id} />}
+      {me && <MemoryPanel projectId={id} />}
       <LiveView projectId={id} />
     </main>
   );
