@@ -12,3 +12,12 @@ export interface EventRow {
   id: string; project_id: string; member_id: string; session_id: string;
   ts: string; branch: string | null; files: string[]; message: string;
 }
+export interface MemoryRow {
+  id: string; project_id: string; author_member_id: string;
+  author_kind: 'human' | 'agent'; source_tool: string;
+  text: string; file_paths: string[]; branch: string | null; tags: string[];
+  status: 'confirmed' | 'unconfirmed'; confidence: number;
+  superseded_by: string | null; content_hash: string;
+  created_at: string; last_referenced_at: string | null;
+  expires_at: string | null; archived_at: string | null;
+}
