@@ -1,7 +1,7 @@
 import { createMcpHandler, withMcpAuth } from 'mcp-handler';
 import { z } from 'zod';
 import { resolveMember } from '@/src/lib/mcp/auth';
-import { pullTeamContext, setMyStatus } from '@/src/lib/mcp/tools';
+import { pullTeamContext, setMyStatus, remember } from '@/src/lib/mcp/tools';
 import type { MemberRow } from '@/src/types/db';
 
 const handler = createMcpHandler(
@@ -24,6 +24,21 @@ const handler = createMcpHandler(
         const member = extra.authInfo!.extra!.member as MemberRow;
         await setMyStatus(member, args);
         return { content: [{ type: 'text', text: 'summary updated' }] };
+      },
+    );
+    server.tool(
+      'remember',
+      'Save a durable team memory (a decision, convention, gotcha, or fact) tied to files/branch so teammates and future sessions recall it when they touch the same code. Do NOT store secrets. Use for things worth keeping beyond this session.',
+      { text: z.string(), file_paths: z.array(z.string()).optional(), branch: z.string().nullable().optional(), tags: z.array(z.string()).optional() },
+      async (args, extra) => {
+        const member = extra.authInfo!.extra!.member as MemberRow;
+        try {
+          const { id } = await remember(member, args);
+          return { content: [{ type: 'text', text: `remembered (${id})` }] };
+        } catch (e) {
+          // additive: never throw out of the handler
+          return { content: [{ type: 'text', text: `not saved: ${(e as Error).message}` }] };
+        }
       },
     );
   },

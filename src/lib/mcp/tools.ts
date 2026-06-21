@@ -1,7 +1,20 @@
 import { getAdmin } from '../supabase/admin';
 import { computeOverlap, type MemberSnapshot, type OverlapAlert } from '../overlap';
 import { OVERLAP_WINDOW_MINUTES } from '../constants';
+import { insertMemory } from '../memory-write';
 import type { MemberRow, StatusRow, EventRow } from '../../types/db';
+
+export async function remember(
+  member: MemberRow,
+  args: { text: string; file_paths?: string[]; branch?: string | null; tags?: string[] },
+  sourceTool = 'claude-code',
+): Promise<{ id: string }> {
+  const { id } = await insertMemory(getAdmin(), {
+    projectId: member.project_id, authorMemberId: member.id, authorKind: 'agent', sourceTool,
+    text: args.text, filePaths: args.file_paths, branch: args.branch, tags: args.tags,
+  });
+  return { id };
+}
 
 export async function setMyStatus(member: MemberRow, args: { summary: string }): Promise<void> {
   const { error } = await getAdmin().from('project_members')
