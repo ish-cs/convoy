@@ -6,7 +6,15 @@ import { join } from 'node:path';
 
 const INGEST = process.env.CONVOY_INGEST_URL || 'https://convoy-ish-c.vercel.app/api/ingest';
 
-function relativize(fp, cwd) { return fp.startsWith(cwd + '/') ? fp.slice(cwd.length + 1) : fp; }
+// Mirror of src/lib/repo-path.ts toRepoRelative (kept in sync; this adapter is plain .mjs
+// and can't import the TS util). Canonical repo-relative path so the same logical file
+// matches across machines/checkouts/OSes.
+function toRepoRelative(absPath, repoRoot) {
+  let p = String(absPath).replace(/\\/g, '/');
+  const root = String(repoRoot || '').replace(/\\/g, '/').replace(/\/+$/, '');
+  if (root && p.startsWith(root + '/')) p = p.slice(root.length + 1);
+  return p.replace(/^[A-Za-z]:\//, '').replace(/^\.?\//, '').replace(/\/+/g, '/');
+}
 
 async function main() {
   let raw = '';
@@ -21,6 +29,9 @@ async function main() {
   const cwd = p.cwd || process.cwd();
   let branch = null;
   try { branch = execSync('git branch --show-current', { cwd, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() || null; } catch {}
+  // repoRoot makes file paths canonical across machines/checkouts; fall back to cwd outside a repo.
+  let repoRoot = cwd;
+  try { repoRoot = execSync('git rev-parse --show-toplevel', { cwd, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() || cwd; } catch {}
 
   let body;
   if (p.hook_event_name === 'Stop') {
@@ -28,7 +39,7 @@ async function main() {
   } else {
     const fp = p.tool_input?.file_path;
     if (!fp) process.exit(0);
-    const file = relativize(fp, cwd);
+    const file = toRepoRelative(fp, repoRoot);
     body = { session_id: p.session_id, kind: 'edit', branch, files: [file], message: `edited ${file}` };
   }
   try {
