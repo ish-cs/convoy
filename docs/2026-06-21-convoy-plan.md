@@ -60,9 +60,11 @@ convoy/
 
 ---
 
-# Phase 0 — Scaffold, repo, walking-skeleton deploy
+# Phase 0 — Scaffold, repo, walking-skeleton deploy ✅ DONE (2026-06-21)
 
-### Task 0: Project scaffold + tooling
+> Live: https://convoy-ish-c.vercel.app · repo: github.com/ish-cs/convoy · Vercel SSO protection disabled.
+
+### Task 0: Project scaffold + tooling ✅
 
 **Files:** `package.json`, `next.config.ts`, `tsconfig.json`, `app/layout.tsx`, `app/page.tsx`, `app/globals.css`, `vitest.config.ts`, `.gitignore`, `.env.local.example`
 
@@ -108,7 +110,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 git init && git add -A && git commit -m "chore: scaffold Convoy Next app with tooling"
 ```
 
-### Task 1: Public repo + Vercel link + first deploy
+### Task 1: Public repo + Vercel link + first deploy ✅
 
 - [ ] **Step 1: Placeholder landing** `app/page.tsx`
 ```tsx
