@@ -685,9 +685,9 @@ Expected: a `member_status` row for session `t1` with `files=['src/auth.ts']`. C
 
 ---
 
-# Phase 4 — MCP read endpoint
+# Phase 4 — MCP read endpoint ✅
 
-### Task 9: MCP tool handlers (`pullTeamContext`, `setMyStatus`) + tests
+### Task 9: MCP tool handlers (`pullTeamContext`, `setMyStatus`) + tests ✅
 
 **Files:** `src/lib/mcp/tools.ts`, extend `tests/mcp-tools.test.ts`
 
@@ -695,7 +695,7 @@ Expected: a `member_status` row for session `t1` with `files=['src/auth.ts']`. C
 - `pullTeamContext(member, args: {branch?: string|null; files?: string[]}, now: Date): Promise<{members; recent_events; alerts}>`
 - `setMyStatus(member, args: {summary: string}): Promise<void>`
 
-- [ ] **Step 1: Failing integration test** (seeds P + M1, M2; uses `ingestEdit` to create M2 state)
+- [x] **Step 1: Failing integration test** (seeds P + M1, M2; uses `ingestEdit` to create M2 state)
 ```ts
 import { ingestEdit } from '../src/lib/ingest';
 import { pullTeamContext, setMyStatus } from '../src/lib/mcp/tools';
@@ -723,9 +723,9 @@ it('caller is excluded from members and alerts', async () => {
 });
 ```
 
-- [ ] **Step 2: Run → fail.**
+- [x] **Step 2: Run → fail.**
 
-- [ ] **Step 3: Implement** `src/lib/mcp/tools.ts`
+- [x] **Step 3: Implement** `src/lib/mcp/tools.ts`
 ```ts
 import { getAdmin } from '../supabase/admin';
 import { computeOverlap, type MemberSnapshot, type OverlapAlert } from '../overlap';
@@ -782,15 +782,15 @@ export async function pullTeamContext(
 }
 ```
 
-- [ ] **Step 4: Run → pass.** **Step 5: Commit** — `git add -A && git commit -m "feat(mcp): pull_team_context + set_my_status handlers + tests" && git push`
+- [x] **Step 4: Run → pass.** **Step 5: Commit** — `git add -A && git commit -m "feat(mcp): pull_team_context + set_my_status handlers + tests" && git push`
 
-### Task 10: `/mcp` HTTP route
+### Task 10: `/mcp` HTTP route ✅
 
 **Files:** `app/mcp/route.ts`
 
 > Verify `mcp-handler` `withMcpAuth` / `authInfo.extra` signatures against its current README. If `mcp-handler` requires `REDIS_URL` for SSE, set it (Upstash free) **or** use its stateless option — our tools are request/response, so stateless is preferred. The tool I/O contract is adapter-independent.
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 ```ts
 import { createMcpHandler, withMcpAuth } from 'mcp-handler';
 import { z } from 'zod';
@@ -833,13 +833,13 @@ const authed = withMcpAuth(
 export { authed as GET, authed as POST };
 ```
 
-- [ ] **Step 2: Deploy + real-session smoke** — `pnpm dlx vercel@latest --prod`, then in a real Claude Code session:
+- [x] **Step 2: Deploy + real-session smoke** — `pnpm dlx vercel@latest --prod`, then in a real Claude Code session:
 ```bash
 claude mcp add --transport http convoy <url>/mcp -H "Authorization: Bearer <seeded-token>"
 ```
 Ask Claude to call `pull_team_context` → JSON with members/recent_events/alerts. Revoked token → 401.
 
-- [ ] **Step 3: Commit** — `git add -A && git commit -m "feat(mcp): hosted /mcp route (pull + set_my_status)" && git push`
+- [x] **Step 3: Commit** — `git add -A && git commit -m "feat(mcp): hosted /mcp route (pull + set_my_status)" && git push`
 
 ---
 
