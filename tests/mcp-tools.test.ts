@@ -63,4 +63,14 @@ describe('mcp tools', () => {
     expect(res.alerts.every((a) => a.memberId !== M1.id)).toBe(true);
     expect(res.members.every((s) => s.member_id !== M1.id)).toBe(true);
   });
+
+  it('a revoked member token no longer resolves (revoke kills access)', async () => {
+    const admin = getAdmin();
+    const { data: m, error } = await admin.from('project_members')
+      .insert({ project_id: P, email: `revoke-${Date.now()}@convoy.test` }).select().single();
+    if (error) throw new Error(`seed revoke member: ${error.message}`);
+    expect(await resolveMember(m!.token)).not.toBeNull();
+    await admin.from('project_members').update({ revoked_at: new Date().toISOString() }).eq('id', m!.id);
+    expect(await resolveMember(m!.token)).toBeNull();
+  });
 });
