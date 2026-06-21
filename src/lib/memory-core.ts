@@ -19,7 +19,7 @@ export function detectSecret(text: string): string | null {
   return null;
 }
 
-function active(m: MemoryRow, now = Date.now()): boolean {
+export function isActive(m: MemoryRow, now = Date.now()): boolean {
   return m.archived_at == null && m.superseded_by == null &&
     (m.expires_at == null || new Date(m.expires_at).getTime() > now);
 }
@@ -27,7 +27,7 @@ export function matchMemoriesForFiles(memories: MemoryRow[], files: string[]): M
   const wanted = new Set(files.map(normalizePath));
   const seen = new Set<string>();
   return memories
-    .filter(m => active(m))
+    .filter(m => isActive(m))
     .filter(m => m.file_paths.some(p => wanted.has(normalizePath(p))))
     .filter(m => (seen.has(m.id) ? false : (seen.add(m.id), true)))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
