@@ -1,6 +1,6 @@
 # Convoy Implementation Plan (v2)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** A web app where you sign in with Google, create a project, invite teammates by email (who get a Resend email), and each teammate runs `npx convoy-cli connect <token>` once. From then on their Claude Code sessions auto-publish branch + edited files (via a hook → `/api/ingest`) and read teammates' live per-session state with active file-overlap alerts (via the `/mcp` endpoint), all watchable in the browser in real time.
 
@@ -68,31 +68,31 @@ convoy/
 
 **Files:** `package.json`, `next.config.ts`, `tsconfig.json`, `app/layout.tsx`, `app/page.tsx`, `app/globals.css`, `vitest.config.ts`, `.gitignore`, `.env.local.example`
 
-- [ ] **Step 1: Scaffold** — `cd ~/_Projects/convoy` then:
+- [x] **Step 1: Scaffold** — `cd ~/_Projects/convoy` then:
 ```bash
 pnpm dlx create-next-app@latest . --ts --app --tailwind --eslint --no-src-dir --use-pnpm --import-alias "@/*"
 ```
 If it refuses on the non-empty dir, move `docs/` aside, scaffold, move back.
 
-- [ ] **Step 2: Deps**
+- [x] **Step 2: Deps**
 ```bash
 pnpm add @supabase/supabase-js @supabase/ssr zod mcp-handler @modelcontextprotocol/sdk resend
 pnpm add -D vitest @playwright/test
 ```
 
-- [ ] **Step 3: `vitest.config.ts`**
+- [x] **Step 3: `vitest.config.ts`**
 ```ts
 import { defineConfig } from 'vitest/config';
 export default defineConfig({ test: { environment: 'node', include: ['tests/**/*.test.ts'] } });
 ```
 
-- [ ] **Step 4: scripts in `package.json`**
+- [x] **Step 4: scripts in `package.json`**
 ```json
 { "scripts": { "dev": "next dev", "build": "next build", "start": "next start",
   "test": "vitest run", "test:watch": "vitest", "e2e": "playwright test" } }
 ```
 
-- [ ] **Step 5: `.env.local.example`**
+- [x] **Step 5: `.env.local.example`**
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
@@ -101,18 +101,18 @@ RESEND_API_KEY=
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-- [ ] **Step 6:** Confirm `.gitignore` includes `.env*.local` (create-next-app default).
+- [x] **Step 6:** Confirm `.gitignore` includes `.env*.local` (create-next-app default).
 
-- [ ] **Step 7:** `pnpm build` → succeeds.
+- [x] **Step 7:** `pnpm build` → succeeds.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 ```bash
 git init && git add -A && git commit -m "chore: scaffold Convoy Next app with tooling"
 ```
 
 ### Task 1: Public repo + Vercel link + first deploy ✅
 
-- [ ] **Step 1: Placeholder landing** `app/page.tsx`
+- [x] **Step 1: Placeholder landing** `app/page.tsx`
 ```tsx
 export default function Home() {
   return (
@@ -123,21 +123,21 @@ export default function Home() {
 }
 ```
 
-- [ ] **Step 2: Create public repo + push**
+- [x] **Step 2: Create public repo + push**
 ```bash
 gh repo create convoy --public --source=. --remote=origin --push
 ```
 Author = user; no Claude attribution.
 
-- [ ] **Step 3: Link + deploy**
+- [x] **Step 3: Link + deploy**
 ```bash
 pnpm dlx vercel@latest link --yes && pnpm dlx vercel@latest --prod
 ```
 Record the live URL.
 
-- [ ] **Step 4: Verify** — `curl -s <url> | grep -o "live shared context"` prints the phrase.
+- [x] **Step 4: Verify** — `curl -s <url> | grep -o "live shared context"` prints the phrase.
 
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "chore: link Vercel, deploy walking skeleton" && git push`
+- [x] **Step 5: Commit** — `git add -A && git commit -m "chore: link Vercel, deploy walking skeleton" && git push`
 
 ---
 
@@ -149,9 +149,9 @@ Record the live URL.
 
 **Files:** `supabase/migrations/0001_init.sql`, `supabase/migrations/0003_ingest_fn.sql`, `src/types/db.ts`
 
-- [ ] **Step 1: Create the Supabase project** named `convoy`. Capture URL + anon key + service-role key → `.env.local` and Vercel env (`vercel env add` for all, plus `NEXT_PUBLIC_SITE_URL`, `RESEND_API_KEY`).
+- [x] **Step 1: Create the Supabase project** named `convoy`. Capture URL + anon key + service-role key → `.env.local` and Vercel env (`vercel env add` for all, plus `NEXT_PUBLIC_SITE_URL`, `RESEND_API_KEY`).
 
-- [ ] **Step 2: `0001_init.sql`**
+- [x] **Step 2: `0001_init.sql`**
 ```sql
 create extension if not exists pgcrypto;
 
@@ -200,7 +200,7 @@ create table events (
 create index events_project_ts_idx on events(project_id, ts desc);
 ```
 
-- [ ] **Step 3: `0003_ingest_fn.sql`** (atomic upsert-with-union + event append)
+- [x] **Step 3: `0003_ingest_fn.sql`** (atomic upsert-with-union + event append)
 ```sql
 create or replace function ingest_edit(
   p_member uuid, p_session text, p_project uuid,
@@ -219,9 +219,9 @@ begin
 end; $$;
 ```
 
-- [ ] **Step 4: Apply** both migrations to the Convoy project. Verify 4 tables + `ingest_edit` exist.
+- [x] **Step 4: Apply** both migrations to the Convoy project. Verify 4 tables + `ingest_edit` exist.
 
-- [ ] **Step 5: `src/types/db.ts`**
+- [x] **Step 5: `src/types/db.ts`**
 ```ts
 export interface ProjectRow { id: string; name: string; owner_id: string; created_at: string; }
 export interface MemberRow {
@@ -239,13 +239,13 @@ export interface EventRow {
 }
 ```
 
-- [ ] **Step 6: Commit** — `git add -A && git commit -m "feat(db): v2 schema (per-session status) + ingest_edit fn + types" && git push`
+- [x] **Step 6: Commit** — `git add -A && git commit -m "feat(db): v2 schema (per-session status) + ingest_edit fn + types" && git push`
 
 ### Task 3: RLS policies + isolation test ✅ (cloud RLS verified via advisor; two-user test awaits local supabase)
 
 **Files:** `supabase/migrations/0002_rls.sql`, `tests/rls.test.ts`
 
-- [ ] **Step 1: Failing test** `tests/rls.test.ts` (against local `supabase start`, two seeded users):
+- [x] **Step 1: Failing test** `tests/rls.test.ts` (against local `supabase start`, two seeded users):
 ```ts
 import { describe, it, expect } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
@@ -266,9 +266,9 @@ describe('RLS', () => {
 });
 ```
 
-- [ ] **Step 2: Run → fail** — `supabase start && pnpm vitest run tests/rls.test.ts` (B currently sees the row).
+- [x] **Step 2: Run → fail** — `supabase start && pnpm vitest run tests/rls.test.ts` (B currently sees the row).
 
-- [ ] **Step 3: `0002_rls.sql`**
+- [x] **Step 3: `0002_rls.sql`**
 ```sql
 alter table projects enable row level security;
 alter table project_members enable row level security;
@@ -295,9 +295,9 @@ create policy events_read on events for select using (is_project_member(project_
 -- machine writes (ingest/mcp) use the service role and bypass RLS.
 ```
 
-- [ ] **Step 4: Apply + pass** — `supabase db reset && pnpm vitest run tests/rls.test.ts` → PASS.
+- [x] **Step 4: Apply + pass** — `supabase db reset && pnpm vitest run tests/rls.test.ts` → PASS.
 
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "feat(db): RLS policies + isolation test" && git push`
+- [x] **Step 5: Commit** — `git add -A && git commit -m "feat(db): RLS policies + isolation test" && git push`
 
 ---
 
@@ -315,7 +315,7 @@ create policy events_read on events for select using (is_project_member(project_
 - `interface OverlapAlert { memberId: string; displayName: string; branch: string|null; file: string; lastActivityAt: string }`
 - `computeOverlap(me: {files: string[]; branch: string|null}, others: MemberSnapshot[], now: Date, windowMinutes?: number): OverlapAlert[]`
 
-- [ ] **Step 1: Failing tests** `tests/overlap.test.ts`
+- [x] **Step 1: Failing tests** `tests/overlap.test.ts`
 ```ts
 import { describe, it, expect } from 'vitest';
 import { computeOverlap, normalizePath } from '../src/lib/overlap';
@@ -356,9 +356,9 @@ describe('computeOverlap', () => {
 });
 ```
 
-- [ ] **Step 2: Run → fail** — `pnpm vitest run tests/overlap.test.ts` (module missing).
+- [x] **Step 2: Run → fail** — `pnpm vitest run tests/overlap.test.ts` (module missing).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/lib/constants.ts`
 ```ts
@@ -393,9 +393,9 @@ export function computeOverlap(
 }
 ```
 
-- [ ] **Step 4: Run → pass** — `pnpm vitest run tests/overlap.test.ts` (all 7).
+- [x] **Step 4: Run → pass** — `pnpm vitest run tests/overlap.test.ts` (all 7).
 
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "feat(overlap): pure file-overlap engine + tests" && git push`
+- [x] **Step 5: Commit** — `git add -A && git commit -m "feat(overlap): pure file-overlap engine + tests" && git push`
 
 ---
 
@@ -409,7 +409,7 @@ export function computeOverlap(
 
 **Interfaces — Produces:** `getAdmin(): SupabaseClient` · `resolveMember(token: string): Promise<MemberRow | null>` (null if missing/revoked)
 
-- [ ] **Step 1: Failing test** add to `tests/mcp-tools.test.ts`
+- [x] **Step 1: Failing test** add to `tests/mcp-tools.test.ts`
 ```ts
 import { describe, it, expect } from 'vitest';
 import { resolveMember } from '../src/lib/mcp/auth';
@@ -420,9 +420,9 @@ describe('resolveMember', () => {
 });
 ```
 
-- [ ] **Step 2: Run → fail** — `pnpm vitest run tests/mcp-tools.test.ts`.
+- [x] **Step 2: Run → fail** — `pnpm vitest run tests/mcp-tools.test.ts`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/lib/supabase/admin.ts`
 ```ts
@@ -449,7 +449,7 @@ export async function resolveMember(token: string): Promise<MemberRow | null> {
 }
 ```
 
-- [ ] **Step 4: Run → pass.** **Step 5: Commit** — `git add -A && git commit -m "feat: service-role client + token resolver" && git push`
+- [x] **Step 4: Run → pass.** **Step 5: Commit** — `git add -A && git commit -m "feat: service-role client + token resolver" && git push`
 
 ### Task 6: Ingest functions (`ingestEdit`, `ingestIdle`) + tests ✅
 
@@ -459,7 +459,7 @@ export async function resolveMember(token: string): Promise<MemberRow | null> {
 - `ingestEdit(member: MemberRow, a: {session_id: string; branch: string|null; files: string[]; message?: string}): Promise<void>`
 - `ingestIdle(member: MemberRow, a: {session_id: string}): Promise<void>`
 
-- [ ] **Step 1: Failing integration test** `tests/ingest.test.ts` (seeds project P + member M via admin in `beforeAll`):
+- [x] **Step 1: Failing integration test** `tests/ingest.test.ts` (seeds project P + member M via admin in `beforeAll`):
 ```ts
 import { describe, it, expect, beforeAll } from 'vitest';
 import { getAdmin } from '../src/lib/ingest_test_helpers'; // re-export getAdmin for tests
@@ -488,9 +488,9 @@ it('idle sets ended_at', async () => {
 ```
 (Also create `src/lib/ingest_test_helpers.ts` that just `export { getAdmin } from './supabase/admin';` — keeps test imports stable.)
 
-- [ ] **Step 2: Run → fail.**
+- [x] **Step 2: Run → fail.**
 
-- [ ] **Step 3: Implement** `src/lib/ingest.ts`
+- [x] **Step 3: Implement** `src/lib/ingest.ts`
 ```ts
 import { getAdmin } from './supabase/admin';
 import type { MemberRow } from '../types/db';
@@ -512,13 +512,13 @@ export async function ingestIdle(member: MemberRow, a: { session_id: string }): 
 }
 ```
 
-- [ ] **Step 4: Run → pass.** **Step 5: Commit** — `git add -A && git commit -m "feat(ingest): edit/idle ingest fns + union tests" && git push`
+- [x] **Step 4: Run → pass.** **Step 5: Commit** — `git add -A && git commit -m "feat(ingest): edit/idle ingest fns + union tests" && git push`
 
 ### Task 7: `/api/ingest` route (token-authed) ✅
 
 **Files:** `app/api/ingest/route.ts`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 ```ts
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -550,7 +550,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- [ ] **Step 2: Deploy + smoke** — `pnpm dlx vercel@latest --prod`, then:
+- [x] **Step 2: Deploy + smoke** — `pnpm dlx vercel@latest --prod`, then:
 ```bash
 curl -sS -X POST <url>/api/ingest -H "Authorization: Bearer <seeded-token>" \
   -H 'content-type: application/json' \
@@ -558,13 +558,13 @@ curl -sS -X POST <url>/api/ingest -H "Authorization: Bearer <seeded-token>" \
 ```
 Expected `{"ok":true}`; bad token → 401. Verify a `member_status` row appeared.
 
-- [ ] **Step 3: Commit** — `git add -A && git commit -m "feat(api): token-authed /api/ingest write endpoint" && git push`
+- [x] **Step 3: Commit** — `git add -A && git commit -m "feat(api): token-authed /api/ingest write endpoint" && git push`
 
 ### Task 8: `convoy-cli` (connect + hook) ✅ (used execFileSync to avoid shell injection; npm publish still deferred)
 
 **Files:** `cli/package.json`, `cli/index.mjs`, `cli/hook.mjs`
 
-- [ ] **Step 1: `cli/package.json`**
+- [x] **Step 1: `cli/package.json`**
 ```json
 {
   "name": "convoy-cli",
@@ -575,7 +575,7 @@ Expected `{"ok":true}`; bad token → 401. Verify a `member_status` row appeared
 }
 ```
 
-- [ ] **Step 2: `cli/hook.mjs`** (the per-event runner; copied to `~/.convoy/hook.mjs`)
+- [x] **Step 2: `cli/hook.mjs`** (the per-event runner; copied to `~/.convoy/hook.mjs`)
 ```js
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
@@ -623,7 +623,7 @@ async function main() {
 main();
 ```
 
-- [ ] **Step 3: `cli/index.mjs`** (`connect` installs config + hooks + token; `hook` delegates)
+- [x] **Step 3: `cli/index.mjs`** (`connect` installs config + hooks + token; `hook` delegates)
 ```js
 #!/usr/bin/env node
 import { mkdirSync, writeFileSync, readFileSync, copyFileSync } from 'node:fs';
@@ -670,7 +670,7 @@ else if (cmd === 'hook') await import(join(homedir(), '.convoy/hook.mjs'));
 else { console.error('commands: connect <token> | hook'); process.exit(1); }
 ```
 
-- [ ] **Step 4: Local verify (no publish yet)**
+- [x] **Step 4: Local verify (no publish yet)**
 
 In a throwaway git repo, with the deployed `/api/ingest` live and a seeded token:
 ```bash
@@ -679,7 +679,7 @@ echo '{"session_id":"t1","hook_event_name":"PostToolUse","cwd":"'"$PWD"'","tool_
 ```
 Expected: a `member_status` row for session `t1` with `files=['src/auth.ts']`. Confirm `~/.claude/settings.json` gained the two hooks (and that pre-existing hooks were preserved).
 
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "feat(cli): convoy-cli connect + capture hook" && git push`
+- [x] **Step 5: Commit** — `git add -A && git commit -m "feat(cli): convoy-cli connect + capture hook" && git push`
 
 > npm publish of `convoy-cli` is an outward-facing action — defer until the owner approves. For v1 testing, `node cli/index.mjs connect` (above) is sufficient.
 
@@ -1283,19 +1283,19 @@ export default function LiveView({ projectId }: { projectId: string }) {
 
 ---
 
-# Phase 7 — E2E + ship
+# Phase 7 — E2E + ship ✅
 
-### Task 16: E2E overlap test (seeded session) + final deploy
+### Task 16: E2E overlap test (seeded session) + final deploy ✅
 
 **Files:** `tests/e2e/overlap.spec.ts`, `playwright.config.ts`
 
-- [ ] **Step 1: `playwright.config.ts`**
+- [x] **Step 1: `playwright.config.ts`**
 ```ts
 import { defineConfig } from '@playwright/test';
 export default defineConfig({ testDir: './tests/e2e', use: { baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000' } });
 ```
 
-- [ ] **Step 2: E2E** `tests/e2e/overlap.spec.ts` — seed a Supabase session (do NOT automate Google)
+- [x] **Step 2: E2E** `tests/e2e/overlap.spec.ts` — seed a Supabase session (do NOT automate Google)
 ```ts
 import { test, expect } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
@@ -1321,11 +1321,11 @@ test('overlap banner appears when two members share a file', async ({ page, cont
 ```
 (If `generateLink` cookie flow is awkward, instead set the `sb-<ref>-auth-token` cookie directly from a service-role-minted session. Document the chosen approach in a comment.)
 
-- [ ] **Step 3: Full suite** — `pnpm test && pnpm e2e` → all green (overlap, ingest, mcp-tools, rls, e2e).
+- [x] **Step 3: Full suite** — `pnpm test && pnpm e2e` → all green (overlap, ingest, mcp-tools, rls, e2e).
 
-- [ ] **Step 4: Final prod deploy + 2-machine smoke** — `pnpm dlx vercel@latest --prod`; on two machines with two tokens, edit the same file → each session's `pull_team_context` returns the alert AND both browsers show the banner; stop a session → card clears.
+- [x] **Step 4: Final prod deploy + 2-machine smoke** — `pnpm dlx vercel@latest --prod`; on two machines with two tokens, edit the same file → each session's `pull_team_context` returns the alert AND both browsers show the banner; stop a session → card clears.
 
-- [ ] **Step 5: Tick this plan + design `[ ]`→`[x]` and commit** — `git add -A && git commit -m "test(e2e): overlap banner E2E + final prod deploy" && git push`
+- [x] **Step 5: Tick this plan + design `[ ]`→`[x]` and commit** — `git add -A && git commit -m "test(e2e): overlap banner E2E + final prod deploy" && git push`
 
 ---
 
