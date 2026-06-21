@@ -2,7 +2,9 @@ import { getAdmin } from '../supabase/admin';
 import { computeOverlap, type MemberSnapshot, type OverlapAlert } from '../overlap';
 import { OVERLAP_WINDOW_MINUTES } from '../constants';
 import { insertMemory } from '../memory-write';
-import type { MemberRow, StatusRow, EventRow } from '../../types/db';
+import { recallMemory } from '../memory-read';
+import { attachMemory } from '../memory-core';
+import type { MemberRow, StatusRow, EventRow, MemoryRow } from '../../types/db';
 
 export async function remember(
   member: MemberRow,
@@ -14,6 +16,10 @@ export async function remember(
     text: args.text, filePaths: args.file_paths, branch: args.branch, tags: args.tags,
   });
   return { id };
+}
+
+export async function recall(member: MemberRow, args: { query?: string }): Promise<MemoryRow[]> {
+  return recallMemory(getAdmin(), { query: args.query ?? '', projectId: member.project_id });
 }
 
 export async function setMyStatus(member: MemberRow, args: { summary: string }): Promise<void> {
@@ -30,7 +36,7 @@ export async function pullTeamContext(
 ): Promise<{
   members: (StatusRow & { display_name: string | null; current_summary: string | null })[];
   recent_events: EventRow[];
-  alerts: OverlapAlert[];
+  alerts: (OverlapAlert & { memory: MemoryRow[] })[];
 }> {
   const db = getAdmin();
   const cutoffIso = new Date(now.getTime() - OVERLAP_WINDOW_MINUTES * 60_000).toISOString();
@@ -66,10 +72,22 @@ export async function pullTeamContext(
   }));
 
   const alerts = computeOverlap({ files: args.files ?? [], branch: args.branch ?? null }, snapshots, now, OVERLAP_WINDOW_MINUTES);
+
+  // Attach relevant team memory to each alert — additive: a memory failure must
+  // never drop the coordination alert.
+  let alertsWithMemory: (OverlapAlert & { memory: MemoryRow[] })[];
+  try {
+    const { data: mems } = await db.from('memory').select('*')
+      .eq('project_id', member.project_id).is('archived_at', null).is('superseded_by', null);
+    alertsWithMemory = attachMemory(alerts, (mems ?? []) as MemoryRow[]);
+  } catch {
+    alertsWithMemory = alerts.map(a => ({ ...a, memory: [] as MemoryRow[] }));
+  }
+
   const members = others.map(s => ({
     ...s,
     display_name: meta.get(s.member_id)?.display_name ?? null,
     current_summary: meta.get(s.member_id)?.current_summary ?? null,
   }));
-  return { members, recent_events: events.filter(e => e.member_id !== member.id), alerts };
+  return { members, recent_events: events.filter(e => e.member_id !== member.id), alerts: alertsWithMemory };
 }

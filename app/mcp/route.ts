@@ -1,7 +1,7 @@
 import { createMcpHandler, withMcpAuth } from 'mcp-handler';
 import { z } from 'zod';
 import { resolveMember } from '@/src/lib/mcp/auth';
-import { pullTeamContext, setMyStatus, remember } from '@/src/lib/mcp/tools';
+import { pullTeamContext, setMyStatus, remember, recall } from '@/src/lib/mcp/tools';
 import type { MemberRow } from '@/src/types/db';
 
 const handler = createMcpHandler(
@@ -39,6 +39,16 @@ const handler = createMcpHandler(
           // additive: never throw out of the handler
           return { content: [{ type: 'text', text: `not saved: ${(e as Error).message}` }] };
         }
+      },
+    );
+    server.tool(
+      'recall',
+      'Search this project\'s team memory (decisions, conventions, gotchas) by keywords. Call when you need prior context about an area of the code. Returns the most relevant saved memories.',
+      { query: z.string().optional() },
+      async (args, extra) => {
+        const member = extra.authInfo!.extra!.member as MemberRow;
+        const rows = await recall(member, args);
+        return { content: [{ type: 'text', text: JSON.stringify(rows, null, 2) }] };
       },
     );
   },

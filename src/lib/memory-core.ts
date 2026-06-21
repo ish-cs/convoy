@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { normalizePath } from './overlap';
+import { normalizePath, type OverlapAlert } from './overlap';
 import type { MemoryRow } from '../types/db';
 
 export function contentHash(text: string, filePaths: string[]): string {
@@ -31,4 +31,9 @@ export function matchMemoriesForFiles(memories: MemoryRow[], files: string[]): M
     .filter(m => m.file_paths.some(p => wanted.has(normalizePath(p))))
     .filter(m => (seen.has(m.id) ? false : (seen.add(m.id), true)))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+// Attach up to 3 relevant memories to each overlap alert (by the alert's file).
+export function attachMemory(alerts: OverlapAlert[], memories: MemoryRow[]): Array<OverlapAlert & { memory: MemoryRow[] }> {
+  return alerts.map(a => ({ ...a, memory: matchMemoriesForFiles(memories, [a.file]).slice(0, 3) }));
 }
