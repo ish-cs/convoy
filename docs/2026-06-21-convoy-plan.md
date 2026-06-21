@@ -399,9 +399,11 @@ export function computeOverlap(
 
 ---
 
-# Phase 3 — Capture write path (ingest + CLI/hook)
+# Phase 3 — Capture write path (ingest + CLI/hook) ✅ DONE (2026-06-21)
 
-### Task 5: Supabase admin client + `resolveMember`
+> Tasks 5–8 shipped & verified LIVE: real hook payload → `/api/ingest` → DB (branch=main, relativized file, Stop→ended_at). `/api/ingest` smoke: valid→200, bad token→401, malformed→400. CLI install idempotent + preserves existing hooks. 10/10 unit tests green. Vercel git-author block fixed (repo email → pandey.ishaan@gmail.com).
+
+### Task 5: Supabase admin client + `resolveMember` ✅
 
 **Files:** `src/lib/supabase/admin.ts`, `src/lib/mcp/auth.ts`, `tests/mcp-tools.test.ts` (auth case)
 
@@ -449,7 +451,7 @@ export async function resolveMember(token: string): Promise<MemberRow | null> {
 
 - [ ] **Step 4: Run → pass.** **Step 5: Commit** — `git add -A && git commit -m "feat: service-role client + token resolver" && git push`
 
-### Task 6: Ingest functions (`ingestEdit`, `ingestIdle`) + tests
+### Task 6: Ingest functions (`ingestEdit`, `ingestIdle`) + tests ✅
 
 **Files:** `src/lib/ingest.ts`, `tests/ingest.test.ts`
 
@@ -512,7 +514,7 @@ export async function ingestIdle(member: MemberRow, a: { session_id: string }): 
 
 - [ ] **Step 4: Run → pass.** **Step 5: Commit** — `git add -A && git commit -m "feat(ingest): edit/idle ingest fns + union tests" && git push`
 
-### Task 7: `/api/ingest` route (token-authed)
+### Task 7: `/api/ingest` route (token-authed) ✅
 
 **Files:** `app/api/ingest/route.ts`
 
@@ -558,7 +560,7 @@ Expected `{"ok":true}`; bad token → 401. Verify a `member_status` row appeared
 
 - [ ] **Step 3: Commit** — `git add -A && git commit -m "feat(api): token-authed /api/ingest write endpoint" && git push`
 
-### Task 8: `convoy-cli` (connect + hook)
+### Task 8: `convoy-cli` (connect + hook) ✅ (used execFileSync to avoid shell injection; npm publish still deferred)
 
 **Files:** `cli/package.json`, `cli/index.mjs`, `cli/hook.mjs`
 
