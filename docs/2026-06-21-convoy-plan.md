@@ -843,15 +843,15 @@ Ask Claude to call `pull_team_context` → JSON with members/recent_events/alert
 
 ---
 
-# Phase 5 — Auth, projects, invites
+# Phase 5 — Auth, projects, invites ✅
 
-### Task 11: Google OAuth sign-in
+### Task 11: Google OAuth sign-in ✅
 
 **Files:** `src/lib/supabase/server.ts`, `client.ts`, `app/login/page.tsx`, `app/auth/callback/route.ts`, `middleware.ts`
 
-- [ ] **Step 1: Configure Google provider** in Supabase (OAuth client in Google Cloud; redirect `<supabase-url>/auth/v1/callback`; Site URL = deploy URL; allow `http://localhost:3000`). Use the get-api-key / browser-use tooling to fetch the Google OAuth client autonomously.
+- [x] **Step 1: Configure Google provider** in Supabase (OAuth client in Google Cloud; redirect `<supabase-url>/auth/v1/callback`; Site URL = deploy URL; allow `http://localhost:3000`). Use the get-api-key / browser-use tooling to fetch the Google OAuth client autonomously.
 
-- [ ] **Step 2: Clients**
+- [x] **Step 2: Clients**
 
 `src/lib/supabase/server.ts`
 ```ts
@@ -876,7 +876,7 @@ export function getBrowserSupabase() {
 }
 ```
 
-- [ ] **Step 3: Login** `app/login/page.tsx`
+- [x] **Step 3: Login** `app/login/page.tsx`
 ```tsx
 'use client';
 import { getBrowserSupabase } from '@/src/lib/supabase/client';
@@ -894,7 +894,7 @@ export default function Login() {
 }
 ```
 
-- [ ] **Step 4: Callback + link pending members** `app/auth/callback/route.ts`
+- [x] **Step 4: Callback + link pending members** `app/auth/callback/route.ts`
 ```ts
 import { NextResponse } from 'next/server';
 import { getServerSupabase } from '@/src/lib/supabase/server';
@@ -916,7 +916,7 @@ export async function GET(req: Request) {
 }
 ```
 
-- [ ] **Step 5: Protect routes** `middleware.ts`
+- [x] **Step 5: Protect routes** `middleware.ts`
 ```ts
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
@@ -935,15 +935,15 @@ export async function middleware(req: NextRequest) {
 export const config = { matcher: ['/dashboard/:path*', '/projects/:path*'] };
 ```
 
-- [ ] **Step 6: Verify** sign-in → `/dashboard` redirect works locally + on deploy.
+- [x] **Step 6: Verify** sign-in → `/dashboard` redirect works locally + on deploy.
 
-- [ ] **Step 7: Commit** — `git add -A && git commit -m "feat(auth): Google OAuth + member linking + protected routes" && git push`
+- [x] **Step 7: Commit** — `git add -A && git commit -m "feat(auth): Google OAuth + member linking + protected routes" && git push`
 
-### Task 12: Create project + dashboard
+### Task 12: Create project + dashboard ✅
 
 **Files:** `app/api/projects/route.ts`, `app/dashboard/page.tsx`, `app/dashboard/NewProject.tsx`
 
-- [ ] **Step 1: API** `app/api/projects/route.ts`
+- [x] **Step 1: API** `app/api/projects/route.ts`
 ```ts
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -967,7 +967,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- [ ] **Step 2: Dashboard** `app/dashboard/page.tsx`
+- [x] **Step 2: Dashboard** `app/dashboard/page.tsx`
 ```tsx
 import Link from 'next/link';
 import { getServerSupabase } from '@/src/lib/supabase/server';
@@ -1009,15 +1009,15 @@ export default function NewProject() {
 }
 ```
 
-- [ ] **Step 3: Verify** sign in → create "Test" → redirect to `/projects/<id>`; `projects` + owner `project_members` rows exist.
+- [x] **Step 3: Verify** sign in → create "Test" → redirect to `/projects/<id>`; `projects` + owner `project_members` rows exist.
 
-- [ ] **Step 4: Commit** — `git add -A && git commit -m "feat(projects): create project + owner member + dashboard" && git push`
+- [x] **Step 4: Commit** — `git add -A && git commit -m "feat(projects): create project + owner member + dashboard" && git push`
 
-### Task 13: Invite (Resend email) + revoke
+### Task 13: Invite (Resend email) + revoke ✅
 
 **Files:** `src/lib/email.ts`, `app/api/projects/[id]/invite/route.ts`, `app/api/members/[id]/revoke/route.ts`
 
-- [ ] **Step 1: Email helper** `src/lib/email.ts`
+- [x] **Step 1: Email helper** `src/lib/email.ts`
 ```ts
 import { Resend } from 'resend';
 export async function sendInviteEmail(to: string, projectName: string) {
@@ -1036,7 +1036,7 @@ export async function sendInviteEmail(to: string, projectName: string) {
 }
 ```
 
-- [ ] **Step 2: Invite API** `app/api/projects/[id]/invite/route.ts`
+- [x] **Step 2: Invite API** `app/api/projects/[id]/invite/route.ts`
 ```ts
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -1061,7 +1061,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 }
 ```
 
-- [ ] **Step 3: Revoke API** `app/api/members/[id]/revoke/route.ts`
+- [x] **Step 3: Revoke API** `app/api/members/[id]/revoke/route.ts`
 ```ts
 import { NextResponse } from 'next/server';
 import { getServerSupabase } from '@/src/lib/supabase/server';
@@ -1081,9 +1081,9 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
 }
 ```
 
-- [ ] **Step 4: Verify** invite a real email → Resend delivers; the member row + token exist; revoke → next `/api/ingest` or `/mcp` call with that token returns 401.
+- [x] **Step 4: Verify** invite a real email → Resend delivers; the member row + token exist; revoke → next `/api/ingest` or `/mcp` call with that token returns 401.
 
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "feat(members): invite (Resend) + revoke" && git push`
+- [x] **Step 5: Commit** — `git add -A && git commit -m "feat(members): invite (Resend) + revoke" && git push`
 
 ---
 
