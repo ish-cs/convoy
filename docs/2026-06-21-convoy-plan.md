@@ -141,9 +141,11 @@ Record the live URL.
 
 ---
 
-# Phase 1 — Database
+# Phase 1 — Database ✅ DONE (2026-06-21)
 
-### Task 2: Supabase project + schema + ingest function
+> Supabase project `convoy` ref `apcncvukfcpveigqlhfa` (us-west-1). 4 tables + `ingest_edit` + RLS applied & verified. Keys in `.env.local` + Vercel env. (Had to pause `berkeley-classes` for the free active-project slot.)
+
+### Task 2: Supabase project + schema + ingest function ✅
 
 **Files:** `supabase/migrations/0001_init.sql`, `supabase/migrations/0003_ingest_fn.sql`, `src/types/db.ts`
 
@@ -239,7 +241,7 @@ export interface EventRow {
 
 - [ ] **Step 6: Commit** — `git add -A && git commit -m "feat(db): v2 schema (per-session status) + ingest_edit fn + types" && git push`
 
-### Task 3: RLS policies + isolation test
+### Task 3: RLS policies + isolation test ✅ (cloud RLS verified via advisor; two-user test awaits local supabase)
 
 **Files:** `supabase/migrations/0002_rls.sql`, `tests/rls.test.ts`
 
@@ -299,9 +301,11 @@ create policy events_read on events for select using (is_project_member(project_
 
 ---
 
-# Phase 2 — Overlap engine (pure)
+# Phase 2 — Overlap engine (pure) ✅ DONE (2026-06-21)
 
-### Task 4: `computeOverlap` + `normalizePath`
+> 7/7 tests pass.
+
+### Task 4: `computeOverlap` + `normalizePath` ✅
 
 **Files:** `src/lib/overlap.ts`, `src/lib/constants.ts`, `tests/overlap.test.ts`
 
