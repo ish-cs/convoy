@@ -1,0 +1,7 @@
+{
+  "name": "convoy-cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": { "convoy-cli": "index.mjs" },
+  "engines": { "node": ">=18" }
+}
