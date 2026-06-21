@@ -1,14 +1,16 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { getBrowserSupabase } from '@/src/lib/supabase/client';
 import { computeOverlap, type MemberSnapshot } from '@/src/lib/overlap';
 import type { StatusRow, EventRow } from '@/src/types/db';
 export default function LiveView({ projectId }: { projectId: string }) {
+  // One client instance for the whole component — queries AND the realtime channel
+  // must share the same authenticated socket, or postgres_changes is evaluated as anon.
+  const sb = useMemo(() => getBrowserSupabase(), []);
   const [status, setStatus] = useState<StatusRow[]>([]);
   const [events, setEvents] = useState<EventRow[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
   const load = useCallback(async () => {
-    const sb = getBrowserSupabase();
     const [{ data: s }, { data: e }, { data: m }] = await Promise.all([
       sb.from('member_status').select('*').eq('project_id', projectId).is('ended_at', null),
       sb.from('events').select('*').eq('project_id', projectId).order('ts', { ascending: false }).limit(50),
@@ -16,16 +18,21 @@ export default function LiveView({ projectId }: { projectId: string }) {
     ]);
     setStatus(s ?? []); setEvents(e ?? []);
     setNames(Object.fromEntries((m ?? []).map((x: { id: string; display_name: string | null; email: string }) => [x.id, x.display_name || x.email])));
-  }, [projectId]);
+  }, [projectId, sb]);
   useEffect(() => {
-    load();
-    const sb = getBrowserSupabase();
-    const ch = sb.channel(`proj-${projectId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'member_status', filter: `project_id=eq.${projectId}` }, load)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: `project_id=eq.${projectId}` }, load)
-      .subscribe();
-    return () => { sb.removeChannel(ch); };
-  }, [projectId, load]);
+    let ch: ReturnType<typeof sb.channel> | undefined;
+    (async () => {
+      // Authenticate the realtime socket so RLS lets the change feed through.
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) sb.realtime.setAuth(session.access_token);
+      await load();
+      ch = sb.channel(`proj-${projectId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'member_status', filter: `project_id=eq.${projectId}` }, load)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: `project_id=eq.${projectId}` }, load)
+        .subscribe();
+    })();
+    return () => { if (ch) sb.removeChannel(ch); };
+  }, [projectId, load, sb]);
 
   const snaps: MemberSnapshot[] = status.map(s => ({
     memberId: s.member_id, displayName: names[s.member_id] ?? 'teammate', branch: s.branch, files: s.files, lastActivityAt: s.updated_at,
