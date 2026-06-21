@@ -22,7 +22,7 @@
 ### Task 1: `memory` table + RLS migration
 
 **Files:**
-- Create: `supabase/migrations/0004_memory.sql`
+- Create: `supabase/migrations/0005_memory.sql`
 - Test: `tests/memory-rls.test.ts`
 
 **Interfaces:**
@@ -31,7 +31,7 @@
 - [ ] **Step 1: Write the migration**
 
 ```sql
--- supabase/migrations/0004_memory.sql
+-- supabase/migrations/0005_memory.sql
 create table memory (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
@@ -108,7 +108,7 @@ Expected: PASS (requires local Supabase up + seed from the base plan's E2E seed 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add supabase/migrations/0004_memory.sql tests/memory-rls.test.ts
+git add supabase/migrations/0005_memory.sql tests/memory-rls.test.ts
 git commit -m "feat(memory): memory table + RLS + FTS index"
 ```
 
@@ -294,7 +294,7 @@ git commit -m "feat(memory): remember MCP tool + insertMemory"
 ### Task 4: `recall` MCP tool (FTS search)
 
 **Files:**
-- Create: `supabase/migrations/0005_recall_fn.sql`
+- Create: `supabase/migrations/0006_recall_fn.sql`
 - Create: `src/lib/memory-read.ts`
 - Modify: Phase 4 MCP handler — add `recall` tool.
 - Test: `tests/memory-read.test.ts`
@@ -306,7 +306,7 @@ git commit -m "feat(memory): remember MCP tool + insertMemory"
 - [ ] **Step 1: Write the SQL function**
 
 ```sql
--- supabase/migrations/0005_recall_fn.sql
+-- supabase/migrations/0006_recall_fn.sql
 create or replace function recall_memory(q text)
 returns setof memory
 language sql stable security invoker as $$
@@ -378,7 +378,7 @@ Register a `recall` tool with input `{ query: string }`, resolve the authenticat
 - [ ] **Step 8: Commit**
 
 ```bash
-git add supabase/migrations/0005_recall_fn.sql src/lib/memory-read.ts tests/memory-read.test.ts app/api/mcp/route.ts
+git add supabase/migrations/0006_recall_fn.sql src/lib/memory-read.ts tests/memory-read.test.ts app/api/mcp/route.ts
 git commit -m "feat(memory): recall MCP tool + FTS function"
 ```
 

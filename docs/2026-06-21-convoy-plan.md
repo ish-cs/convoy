@@ -1087,13 +1087,13 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
 
 ---
 
-# Phase 6 — Live project view
+# Phase 6 — Live project view ✅
 
-### Task 14: Project shell + install command
+### Task 14: Project shell + install command ✅
 
 **Files:** `app/projects/[id]/page.tsx`, `InstallCommand.tsx`, `InvitePanel.tsx`
 
-- [ ] **Step 1: Server shell** `app/projects/[id]/page.tsx`
+- [x] **Step 1: Server shell** `app/projects/[id]/page.tsx`
 ```tsx
 import { getServerSupabase } from '@/src/lib/supabase/server';
 import LiveView from './LiveView';
@@ -1120,7 +1120,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 }
 ```
 
-- [ ] **Step 2: Install command** `app/projects/[id]/InstallCommand.tsx`
+- [x] **Step 2: Install command** `app/projects/[id]/InstallCommand.tsx`
 ```tsx
 'use client';
 export default function InstallCommand({ token }: { token: string }) {
@@ -1138,7 +1138,7 @@ export default function InstallCommand({ token }: { token: string }) {
 }
 ```
 
-- [ ] **Step 3: Invite panel** `app/projects/[id]/InvitePanel.tsx`
+- [x] **Step 3: Invite panel** `app/projects/[id]/InvitePanel.tsx`
 ```tsx
 'use client';
 import { useState } from 'react';
@@ -1161,17 +1161,17 @@ export default function InvitePanel({ projectId }: { projectId: string }) {
 }
 ```
 
-- [ ] **Step 4: Verify** owner sees install command + invite panel; deploy.
+- [x] **Step 4: Verify** owner sees install command + invite panel; deploy.
 
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "feat(ui): project shell, install command, invite panel" && git push`
+- [x] **Step 5: Commit** — `git add -A && git commit -m "feat(ui): project shell, install command, invite panel" && git push`
 
-### Task 15: Roster + revoke UI + realtime LiveView
+### Task 15: Roster + revoke UI + realtime LiveView ✅
 
 **Files:** `app/projects/[id]/Roster.tsx`, `app/projects/[id]/LiveView.tsx`; enable Realtime
 
-- [ ] **Step 1: Enable Realtime** — `alter publication supabase_realtime add table member_status, events;` (apply to Convoy project).
+- [x] **Step 1: Enable Realtime** — `alter publication supabase_realtime add table member_status, events;` (apply to Convoy project).
 
-- [ ] **Step 2: Roster** `app/projects/[id]/Roster.tsx`
+- [x] **Step 2: Roster** `app/projects/[id]/Roster.tsx`
 ```tsx
 'use client';
 import { useEffect, useState, useCallback } from 'react';
@@ -1206,7 +1206,7 @@ export default function Roster({ projectId }: { projectId: string }) {
 }
 ```
 
-- [ ] **Step 3: LiveView** `app/projects/[id]/LiveView.tsx`
+- [x] **Step 3: LiveView** `app/projects/[id]/LiveView.tsx`
 ```tsx
 'use client';
 import { useEffect, useState, useCallback } from 'react';
@@ -1277,9 +1277,9 @@ export default function LiveView({ projectId }: { projectId: string }) {
 }
 ```
 
-- [ ] **Step 4: Verify live** — two browsers (owner + invited member). From a connected Claude session, edit a file → an "Active sessions" card + activity entry appear without refresh. Two members editing the same file → red banner. Stop a session → its card drops (ended_at set). Revoke a member in the roster → their token 401s.
+- [x] **Step 4: Verify live** — two browsers (owner + invited member). From a connected Claude session, edit a file → an "Active sessions" card + activity entry appear without refresh. Two members editing the same file → red banner. Stop a session → its card drops (ended_at set). Revoke a member in the roster → their token 401s.
 
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "feat(ui): realtime live view + member roster/revoke" && git push`
+- [x] **Step 5: Commit** — `git add -A && git commit -m "feat(ui): realtime live view + member roster/revoke" && git push`
 
 ---
 
