@@ -1,7 +1,13 @@
 {
   "name": "convoy-cli",
   "version": "0.1.0",
+  "description": "Connect Claude Code to Convoy — share live working context (files, branch, overlap alerts) across your team's sessions.",
   "type": "module",
   "bin": { "convoy-cli": "index.mjs" },
-  "engines": { "node": ">=18" }
+  "files": ["index.mjs", "hook.mjs"],
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/ish-cs/convoy.git", "directory": "cli" },
+  "keywords": ["claude-code", "convoy", "mcp", "team", "context"],
+  "publishConfig": { "access": "public" }
 }
