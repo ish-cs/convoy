@@ -1,6 +1,6 @@
 {
   "name": "convoy-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Connect Claude Code to Convoy — share live working context (files, branch, overlap alerts) across your team's sessions.",
   "type": "module",
   "bin": { "convoy-cli": "index.mjs" },
