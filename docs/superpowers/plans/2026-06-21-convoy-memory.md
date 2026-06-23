@@ -440,12 +440,12 @@ git commit -m "feat(memory): recall (FTS+file-join) + auto-attach to overlap ale
 ### Task 9: Hybrid fused ranker
 
 **Files:** Create `src/lib/memory-rank.ts` — pure `rankMemories(candidates, { files, queryEmbedding?, ftsRank?, now, mode })` implementing the weighted fusion (file/fts/semantic/recency/confidence) from the design; constants exported and unit-tested. Modify `recall`/`pull_team_context` to gather candidates from all three sources and rank.
-- [ ] Steps: failing tests for weight behavior (file-match dominates auto-attach mode; semantic dominates recall mode; recency decays old; superseded excluded) → implement pure ranker → update SQL recall fn to also return vector candidates (`embedding <=> :q` top-K) → fuse in `recallMemory` → integration test → commit.
+- [x] Steps: failing tests for weight behavior (file-match dominates auto-attach mode; semantic dominates recall mode; recency decays old; superseded excluded) → implement pure ranker → update SQL recall fn to also return vector candidates (`embedding <=> :q` top-K) → fuse in `recallMemory` → integration test → commit. **Done 2026-06-22, proven live.**
 
 ### Task 10: Contradiction detection + recency bump
 
 **Files:** Create `src/lib/memory-contradiction.ts` — pure `findContradictions(incoming, existingForSameKey)` via embedding similarity + differing text heuristic; on `remember`, flag (don't silently keep both). Bump `last_referenced_at` when a memory is surfaced/used.
-- [ ] Steps: failing test (similar files/tags, opposite text → flagged) → implement → wire flag into write path (return `{ contradicts: [...] }` for human resolution) + reference-bump in recall → commit.
+- [x] Steps: failing test (similar files/tags, opposite text → flagged) → implement → wire flag into write path (return `{ contradicts: [...] }` for human resolution) + reference-bump in recall → commit. **Done 2026-06-22, proven live (flagged:1 + recency bump in prod). Deviation: detect at backfill time, not write path (Global Constraint: write never embeds). Band 0.70–0.97 calibrated to live Gemini vectors.**
 
 ### Task 11: Auto-extract proposer (confirm-to-keep)
 

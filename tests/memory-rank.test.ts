@@ -38,6 +38,16 @@ describe('rankMemories', () => {
     expect(out[0].id).toBe('fresh');
   });
 
+  it('down-weights unconfirmed below an otherwise-identical confirmed memory', () => {
+    const confirmed = mk({ id: 'conf', status: 'confirmed', semanticSim: 0.5 });
+    const unconfirmed = mk({ id: 'unconf', status: 'unconfirmed', semanticSim: 0.5 });
+    const out = rankMemories([unconfirmed, confirmed], { now: NOW, mode: 'recall' });
+    expect(out[0].id).toBe('conf');
+    expect(out[1].id).toBe('unconf');
+    // but it still surfaces (not filtered out) so a human can confirm/dismiss it
+    expect(out).toHaveLength(2);
+  });
+
   it('excludes archived / superseded / expired candidates', () => {
     const out = rankMemories([
       mk({ id: 'live' }),

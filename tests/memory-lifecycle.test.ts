@@ -9,7 +9,7 @@ import type { MemoryRow } from '../src/types/db';
 const base = (o: Partial<MemoryRow>): MemoryRow => ({
   id: 'm', project_id: 'p', author_member_id: 'a', author_kind: 'human', source_tool: 'web',
   text: 't', file_paths: [], branch: null, tags: [], status: 'confirmed', confidence: 1,
-  superseded_by: null, content_hash: 'h', contradicts: [], created_at: '2026-06-21T00:00:00Z',
+  superseded_by: null, content_hash: 'h', contradicts: [], ref_count: 0, created_at: '2026-06-21T00:00:00Z',
   last_referenced_at: null, expires_at: null, archived_at: null, ...o });
 
 describe('isActive', () => {

@@ -5,6 +5,7 @@ import { contentHash, detectSecret } from './memory-core';
 export async function insertMemory(adminDb: SupabaseClient, a: {
   projectId: string; authorMemberId: string; authorKind: 'human'|'agent'; sourceTool: string;
   text: string; filePaths?: string[]; branch?: string|null; tags?: string[];
+  status?: 'confirmed'|'unconfirmed'; confidence?: number;
 }): Promise<{ id: string; deduped: boolean }> {
   const text = (a.text ?? '').trim();
   if (!text) throw new Error('memory text required');
@@ -16,7 +17,8 @@ export async function insertMemory(adminDb: SupabaseClient, a: {
     project_id: a.projectId, author_member_id: a.authorMemberId,
     author_kind: a.authorKind, source_tool: a.sourceTool,
     text, file_paths, branch: a.branch ?? null, tags: a.tags ?? [],
-    confidence: a.authorKind === 'human' ? 1.0 : 0.6,
+    status: a.status ?? 'confirmed',
+    confidence: a.confidence ?? (a.authorKind === 'human' ? 1.0 : 0.6),
     content_hash: hash,
   };
   // Dedup against active rows — mirrors the partial unique index

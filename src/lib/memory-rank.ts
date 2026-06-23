@@ -25,6 +25,11 @@ export const RANK_WEIGHTS: Record<RankMode, { file: number; fts: number; semanti
 
 export const RECENCY_HALFLIFE_DAYS = 30;
 
+// Auto-extracted memories start life `unconfirmed` (a proposal, not a decision). They still
+// surface — so a human can confirm/dismiss them — but ranked below confirmed memories of equal
+// strength. Multiplicative so the penalty applies uniformly across attach and recall modes.
+export const UNCONFIRMED_RANK_FACTOR = 0.5;
+
 const clamp01 = (n: number): number => (n < 0 ? 0 : n > 1 ? 1 : n);
 
 function recencyScore(createdAt: string, now: number): number {
@@ -47,7 +52,8 @@ export function rankMemories(
       const semantic = clamp01(m.semanticSim ?? 0);
       const recency = recencyScore(m.created_at, now);
       const confidence = clamp01(m.confidence ?? 0);
-      const score = w.file * file + w.fts * fts + w.semantic * semantic + w.recency * recency + w.confidence * confidence;
+      const raw = w.file * file + w.fts * fts + w.semantic * semantic + w.recency * recency + w.confidence * confidence;
+      const score = raw * (m.status === 'unconfirmed' ? UNCONFIRMED_RANK_FACTOR : 1);
       return { ...m, score };
     })
     .sort((a, b) => b.score - a.score);

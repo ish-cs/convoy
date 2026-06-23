@@ -10,12 +10,17 @@ export default function MemoryPanel({ projectId }: { projectId: string }) {
   const [files, setFiles] = useState('');
   const [tags, setTags] = useState('');
   const [msg, setMsg] = useState('');
+  const [autoExtract, setAutoExtract] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await sb.from('memory').select('*')
-      .eq('project_id', projectId).is('archived_at', null).is('superseded_by', null)
-      .order('created_at', { ascending: false });
-    setRows((data ?? []) as MemoryRow[]);
+    const [memRes, projRes] = await Promise.all([
+      sb.from('memory').select('*')
+        .eq('project_id', projectId).is('archived_at', null).is('superseded_by', null)
+        .order('created_at', { ascending: false }),
+      sb.from('projects').select('auto_extract').eq('id', projectId).maybeSingle(),
+    ]);
+    setRows((memRes.data ?? []) as MemoryRow[]);
+    setAutoExtract(!!projRes.data?.auto_extract);
   }, [projectId, sb]);
 
   useEffect(() => {
@@ -43,10 +48,23 @@ export default function MemoryPanel({ projectId }: { projectId: string }) {
     else { const j = await res.json().catch(() => ({})); setMsg(j.error || 'failed to pin'); }
   };
   const archive = async (id: string) => { await fetch(`/api/memory/${id}/archive`, { method: 'POST' }); load(); };
+  const confirm = async (id: string) => { await fetch(`/api/memory/${id}/confirm`, { method: 'POST' }); load(); };
+  const toggleAuto = async () => {
+    const next = !autoExtract;
+    setAutoExtract(next); // optimistic
+    const res = await fetch(`/api/projects/${projectId}/auto-extract`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ enabled: next }) });
+    if (!res.ok) setAutoExtract(!next);
+  };
 
   return (
     <section className="space-y-3">
-      <h2 className="font-medium">Team memory</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="font-medium">Team memory</h2>
+        <label className="flex items-center gap-1.5 text-xs text-gray-600">
+          <input type="checkbox" checked={autoExtract} onChange={toggleAuto} />
+          Auto-extract from sessions
+        </label>
+      </div>
       <div className="space-y-2">
         <textarea value={text} onChange={e => setText(e.target.value)} placeholder="A decision, convention, or gotcha worth keeping…" className="w-full rounded border px-3 py-2 text-sm" rows={2} />
         <div className="flex gap-2">
@@ -57,14 +75,23 @@ export default function MemoryPanel({ projectId }: { projectId: string }) {
         {msg && <p className="text-sm text-red-600">{msg}</p>}
       </div>
       <ul className="space-y-1 text-sm">
-        {rows.map(m => (
-          <li key={m.id} className="flex items-start justify-between gap-2 rounded border px-3 py-2">
-            <span>💡 {m.text}
-              {m.file_paths.length > 0 && <span className="ml-1 text-xs text-gray-500">· {m.file_paths.join(', ')}</span>}
-            </span>
-            <button onClick={() => archive(m.id)} className="shrink-0 text-xs text-red-600 underline">Archive</button>
-          </li>
-        ))}
+        {rows.map(m => {
+          const proposed = m.status === 'unconfirmed';
+          return (
+            <li key={m.id} className={`flex items-start justify-between gap-2 rounded border px-3 py-2 ${proposed ? 'border-dashed bg-gray-50 text-gray-500' : ''}`}>
+              <span>
+                {proposed ? '✨' : '💡'} {m.text}
+                {proposed && <span className="ml-1 rounded bg-amber-100 px-1 text-[10px] text-amber-700">proposed</span>}
+                {m.contradicts.length > 0 && <span className="ml-1 rounded bg-red-100 px-1 text-[10px] text-red-700">conflicts ×{m.contradicts.length}</span>}
+                {m.file_paths.length > 0 && <span className="ml-1 text-xs text-gray-400">· {m.file_paths.join(', ')}</span>}
+              </span>
+              <span className="flex shrink-0 gap-2 text-xs">
+                {proposed && <button onClick={() => confirm(m.id)} className="text-green-700 underline">Keep</button>}
+                <button onClick={() => archive(m.id)} className="text-red-600 underline">{proposed ? 'Dismiss' : 'Archive'}</button>
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
