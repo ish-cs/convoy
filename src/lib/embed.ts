@@ -10,6 +10,10 @@
 
 export const EMBED_DIM = 384;
 const MODEL = 'gemini-embedding-001';
+// Gemini free tier throttles bursts with 429/503; retry transiently so recall and the eval
+// gate don't flake on a momentary spike.
+const RETRY_STATUS = new Set([429, 503]);
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export type Embedder = (text: string) => Promise<number[]>;
 
@@ -22,18 +26,22 @@ export function __setEmbedder(fn: Embedder | null): void {
 async function geminiEmbed(text: string): Promise<number[]> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('embed: GEMINI_API_KEY missing');
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:embedContent?key=${key}`,
-    {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        model: `models/${MODEL}`,
-        content: { parts: [{ text }] },
-        outputDimensionality: EMBED_DIM,
-      }),
-    },
-  );
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:embedContent?key=${key}`;
+  const init = {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model: `models/${MODEL}`,
+      content: { parts: [{ text }] },
+      outputDimensionality: EMBED_DIM,
+    }),
+  };
+  let res!: Response;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    res = await fetch(url, init);
+    if (res.ok || !RETRY_STATUS.has(res.status) || attempt === 2) break;
+    await sleep(500 * (attempt + 1));
+  }
   if (!res.ok) throw new Error(`embed: http ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const j = await res.json();
   const v = j?.embedding?.values;

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "eval": "vitest run tests/eval/memory-eval.test.ts",
     "e2e": "playwright test"
   },
   "dependencies": {

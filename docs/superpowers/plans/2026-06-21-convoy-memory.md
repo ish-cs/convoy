@@ -450,7 +450,7 @@ git commit -m "feat(memory): recall (FTS+file-join) + auto-attach to overlap ale
 ### Task 11: Auto-extract proposer (confirm-to-keep)
 
 **Files:** Create `app/api/extract/route.ts` (off by default; per-project opt-in flag on `projects`) — over a finished session's `events`, draft `status:'unconfirmed'`, low-confidence memories. UI shows them faintly with confirm/dismiss; a memory referenced twice auto-confirms.
-- [ ] Steps: project opt-in column migration → extractor drafts unconfirmed rows → UI confirm/dismiss action → ranker down-weights unconfirmed → reference-count auto-confirm → commit. Keep extractor idempotent (content_hash dedup prevents re-drafting).
+- [x] Steps: project opt-in column migration → extractor drafts unconfirmed rows → UI confirm/dismiss action → ranker down-weights unconfirmed → reference-count auto-confirm → commit. **Done 2026-06-22, proven live (5 events→3 drafts, noise dropped; auto-confirm at ref_count 2; idempotent re-run skipped).** Extractor = `gemini-2.5-flash-lite` (flash 503s) + retry. **Plan correction: content_hash dedup is NOT enough for idempotency — the LLM rephrases the same fact on re-run; added session-level `extracted_sessions` guard (migration 0012).**
 
 ### Task 12: Recall eval harness (CI gate, ≥90%)
 

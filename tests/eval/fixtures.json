@@ -1,0 +1,28 @@
+{
+  "memories": [
+    { "id": "auth",    "text": "store auth session tokens in http-only cookies so client-side JavaScript cannot read them", "file_paths": ["src/auth.ts"] },
+    { "id": "ci",      "text": "the CI pipeline runs vitest unit tests first and only then the playwright end-to-end suite", "file_paths": [".github/workflows/ci.yml"] },
+    { "id": "db",      "text": "supabase-js upsert cannot target a partial unique index, so use check-then-insert with a 23505 race fallback", "file_paths": ["src/lib/memory-write.ts"] },
+    { "id": "cron",    "text": "Vercel Hobby tier caps cron jobs at one run per day, so the embedding backfill runs daily not hourly", "file_paths": ["vercel.json"] },
+    { "id": "embed",   "text": "Gemini embeddings are not unit-normalized below 3072 dimensions, so L2-normalize the 384-dim vectors in code", "file_paths": ["src/lib/embed.ts"] },
+    { "id": "rls",     "text": "agent writes use the admin service-role client and never auth.uid, because the agent has no browser session", "file_paths": ["src/lib/supabase/admin.ts"] },
+    { "id": "overlap", "text": "two teammates editing the same file within fifteen minutes triggers a file-overlap collision alert", "file_paths": ["src/lib/overlap.ts"] },
+    { "id": "secret",  "text": "refuse to persist any memory whose text looks like an API key or private key, detected by regex before insert", "file_paths": ["src/lib/memory-core.ts"] },
+    { "id": "recency", "text": "recall ranking decays a memory's importance with an exponential half-life of thirty days", "file_paths": ["src/lib/memory-rank.ts"] },
+    { "id": "realtime","text": "the browser memory panel subscribes to postgres_changes over an authenticated realtime socket to live-update", "file_paths": ["app/projects/[id]/MemoryPanel.tsx"] }
+  ],
+  "questions": [
+    { "q": "how do we keep login credentials safe from cross-site scripting in the browser", "expect": "auth" },
+    { "q": "which test layer executes before the browser-driven checks", "expect": "ci" },
+    { "q": "why can't we just call upsert when saving a row that might already exist", "expect": "db" },
+    { "q": "how often does the background vector job get to run on our hosting plan", "expect": "cron" },
+    { "q": "do we need to scale the model's output vectors ourselves before storing", "expect": "embed" },
+    { "q": "what database identity does a non-human writer use when it has no logged-in user", "expect": "rls" },
+    { "q": "when do we warn people that they might be stepping on each other's work", "expect": "overlap" },
+    { "q": "what stops a leaked credential from being written into the knowledge base", "expect": "secret" },
+    { "q": "how does an old note gradually lose weight in search results over time", "expect": "recency" },
+    { "q": "how does the team note view refresh itself without a page reload", "expect": "realtime" },
+    { "q": "where do we put the bearer token so scripts on the page can't steal it", "expect": "auth" },
+    { "q": "what is the collision window for simultaneous edits to one file", "expect": "overlap" }
+  ]
+}
