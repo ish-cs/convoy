@@ -31,6 +31,8 @@ describe('insertMemory', () => {
     expect(arg.project_id).toBe('p');
     expect(arg.file_paths).toEqual(['src/auth.ts']);
     expect(typeof arg.content_hash).toBe('string');
+    // Write path must NEVER compute/await an embedding — it's filled async by the backfill.
+    expect(arg.embedding).toBeUndefined();
   });
   it('returns the existing id (deduped) when an active row already matches', async () => {
     const d = db({ id: 'existing-1' });
