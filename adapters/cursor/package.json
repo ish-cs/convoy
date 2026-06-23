@@ -1,0 +1,9 @@
+{
+  "name": "convoy-cursor",
+  "version": "0.1.0",
+  "description": "Convoy adapter for cursor — shares live coding context (overlap + memory) into a Convoy project.",
+  "type": "module",
+  "bin": { "convoy-cursor": "bin.mjs" },
+  "files": ["bin.mjs", "../core.mjs"],
+  "engines": { "node": ">=18" }
+}

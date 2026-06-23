@@ -1,0 +1,9 @@
+{
+  "name": "convoy-codex",
+  "version": "0.1.0",
+  "description": "Convoy adapter for codex — shares live coding context (overlap + memory) into a Convoy project.",
+  "type": "module",
+  "bin": { "convoy-codex": "bin.mjs" },
+  "files": ["bin.mjs", "../core.mjs"],
+  "engines": { "node": ">=18" }
+}
