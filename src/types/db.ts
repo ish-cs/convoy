@@ -18,6 +18,7 @@ export interface MemoryRow {
   text: string; file_paths: string[]; branch: string | null; tags: string[];
   status: 'confirmed' | 'unconfirmed'; confidence: number;
   superseded_by: string | null; content_hash: string;
+  contradicts: string[];
   created_at: string; last_referenced_at: string | null;
   expires_at: string | null; archived_at: string | null;
 }

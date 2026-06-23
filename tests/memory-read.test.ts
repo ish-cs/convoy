@@ -15,6 +15,8 @@ describe('recallMemory', () => {
     expect(rows[0].id).toBe('m1');
     expect(db.rpc).toHaveBeenCalledWith('recall_memory_hybrid', expect.objectContaining({ p: 'p', q: 'cookies' }));
     expect(db.rpc.mock.calls[0][1].qe).toHaveLength(384);
+    // recency bump: surfaced memories get touched
+    expect(db.rpc).toHaveBeenCalledWith('touch_memories', { p_ids: ['m1'] });
   });
 
   it('returns [] on rpc error (additive, never throws)', async () => {

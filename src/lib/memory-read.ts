@@ -21,5 +21,11 @@ export async function recallMemory(
   const candidates = (data ?? []).map((r: RankCandidate & { fts_rank?: number; semantic_sim?: number }): RankCandidate => ({
     ...r, ftsRank: r.fts_rank ?? 0, semanticSim: r.semantic_sim ?? 0,
   }));
-  return rankMemories(candidates, { files: a.files, mode: 'recall' }).slice(0, 20);
+  const ranked = rankMemories(candidates, { files: a.files, mode: 'recall' }).slice(0, 20);
+  // Recency bump: mark the surfaced memories as referenced. Fire-and-forget — a failure here
+  // must never block recall (additive), so we don't await and swallow any error.
+  if (ranked.length) {
+    void Promise.resolve(db.rpc('touch_memories', { p_ids: ranked.map(m => m.id) })).catch(() => {});
+  }
+  return ranked;
 }
