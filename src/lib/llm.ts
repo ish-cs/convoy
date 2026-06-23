@@ -1,7 +1,11 @@
 // The single swappable LLM seam for auto-extraction. Mirrors embed.ts: one real provider
 // (Gemini), a test override, strict validation of whatever comes back. Nothing on the write
 // path imports this — extraction is an opt-in, offline-ish proposer, never inline with a write.
-const MODEL = 'gemini-2.5-flash';
+// flash-lite is ample for this background proposer and far less prone to the 503 "high demand"
+// throttling that the headline flash model hits. We retry transient 503/429s a couple of times.
+const MODEL = 'gemini-2.5-flash-lite';
+const RETRY_STATUS = new Set([429, 503]);
+const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
 export type SessionEvent = { message: string; files: string[] };
 export type ExtractedMemory = { text: string; file_paths: string[]; confidence: number };
@@ -25,17 +29,18 @@ async function geminiExtract(events: SessionEvent[]): Promise<ExtractedMemory[]>
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('llm: GEMINI_API_KEY missing');
   const transcript = events.map(e => `- ${e.message}${e.files.length ? `  [${e.files.join(', ')}]` : ''}`).join('\n');
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`,
-    {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: PROMPT }] },
-        contents: [{ role: 'user', parts: [{ text: transcript }] }],
-        generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
-      }),
-    },
-  );
+  const body = JSON.stringify({
+    systemInstruction: { parts: [{ text: PROMPT }] },
+    contents: [{ role: 'user', parts: [{ text: transcript }] }],
+    generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
+  });
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`;
+  let res!: Response;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body });
+    if (res.ok || !RETRY_STATUS.has(res.status) || attempt === 2) break;
+    await sleep(500 * (attempt + 1));
+  }
   if (!res.ok) throw new Error(`llm: http ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const j = await res.json();
   const raw = j?.candidates?.[0]?.content?.parts?.[0]?.text;
