@@ -9,7 +9,7 @@ export default function Roster({ projectId }: { projectId: string }) {
       .select('id, email, display_name, user_id, revoked_at').eq('project_id', projectId);
     setRows(data ?? []);
   }, [projectId]);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { (async () => { await load(); })(); }, [load]);
   const revoke = async (id: string) => { await fetch(`/api/members/${id}/revoke`, { method: 'POST' }); load(); };
   return (
     <section className="space-y-2">
