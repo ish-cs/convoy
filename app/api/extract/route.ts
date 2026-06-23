@@ -30,6 +30,12 @@ async function extract(req: Request): Promise<Response> {
   const { data: project } = await db.from('projects').select('auto_extract').eq('id', first.project_id).single();
   if (!project?.auto_extract) return NextResponse.json({ skipped: 'auto_extract off for project' });
 
+  // Session-level idempotency: content_hash dedup can't stop the LLM re-drafting the same fact
+  // with different wording, so we never extract a session twice.
+  const { data: already } = await db.from('extracted_sessions')
+    .select('drafted').eq('project_id', first.project_id).eq('session_id', sessionId).maybeSingle();
+  if (already) return NextResponse.json({ skipped: 'session already extracted', drafted: already.drafted });
+
   let drafted = 0, deduped = 0;
   try {
     const drafts = await extractMemories((events as EventRow[]).map(e => ({ message: e.message, files: e.files })));
@@ -42,8 +48,10 @@ async function extract(req: Request): Promise<Response> {
       if (dup) deduped++; else drafted++;
     }
   } catch (e) {
+    // Don't mark the session extracted — a transient LLM failure should be retryable.
     return NextResponse.json({ error: (e as Error).message }, { status: 502 });
   }
+  await db.from('extracted_sessions').insert({ project_id: first.project_id, session_id: sessionId, drafted });
   return NextResponse.json({ sessionId, events: events.length, drafted, deduped });
 }
 
