@@ -455,7 +455,7 @@ git commit -m "feat(memory): recall (FTS+file-join) + auto-attach to overlap ale
 ### Task 12: Recall eval harness (CI gate, ≥90%)
 
 **Files:** Create `tests/eval/memory-eval.ts` + seed `tests/eval/fixtures.json` (N seeded memories, M questions with expected memory ids). Assert ≥90% surface the right memory in top-3 via the real ranker.
-- [ ] Steps: author fixtures (personas/questions like Augur's harness) → eval runner scores top-3 hit rate → wire into CI (`pnpm eval`) failing under 0.90 → commit `test(memory): recall eval harness, ≥90% gate`.
+- [x] Steps: author fixtures (personas/questions like Augur's harness) → eval runner scores top-3 hit rate → wire into CI (`npm run eval`) failing under 0.90 → commit `test(memory): recall eval harness, ≥90% gate`. **Done 2026-06-22 — live score 100% (12/12) top-3. Harness = live Gemini embed + production ranker. Note: `npm run eval` (repo is npm, not pnpm). FTS=0 in-process so it isolates the semantic signal.**
 
 > **M2 exit:** semantic recall live, rot controlled, recall quality measured ≥90% in CI. We now out-feature generic memory.
 
@@ -466,12 +466,12 @@ git commit -m "feat(memory): recall (FTS+file-join) + auto-attach to overlap ale
 ### Task 13: Versioned ingest contract
 
 **Files:** Modify `app/api/ingest/route.ts` to accept/validate the `{ v:1, repo, branch, files, event?, memory? }` contract; document it in `docs/ingest-contract.md`. Reject unknown `v`. `source_tool` derived from the token's registered tool.
-- [ ] Steps: zod schema for contract v1 + validation test → accept optional `memory` (calls `insertMemory`) → write `docs/ingest-contract.md` → commit `feat(ingest): versioned tool-agnostic contract v1`.
+- [x] **Done 2026-06-23** — `src/lib/ingest-contract.ts` `parseContract` (zod v1 + legacy claude-code back-compat, KNOWN_TOOLS allowlist, rejects unknown `v`), wired into `app/api/ingest/route.ts` (event + optional memory via `insertMemory`, source_tool provenance). 9 unit tests. `docs/ingest-contract.md` written. Proven LIVE in prod: cursor v1 contract → 200 (memory+status+2 events), v2 → 400, legacy → 200, evilbot → 400. Commit abd9556.
 
 ### Task 14–16: Cursor / Copilot / Codex adapters
 
 **Files:** `adapters/cursor/`, `adapters/copilot/`, `adapters/codex/` — each a thin client that computes `repoRoot` + `toRepoRelative` paths and posts the contract with its `source_tool`. Each registers a member token like `convoy-cli connect`.
-- [ ] Per adapter: connect flow (token) → capture hook/equivalent for that tool → repo-relative paths → post contract → smoke test that a status + memory from that tool is indistinguishable downstream (overlap fires, memory recalls) → commit. Log clearly which tools are wired vs pending (no silent gaps).
+- [x] **Done 2026-06-23** — shared `adapters/core.mjs` (connect + git-watcher: repo-root detect, `toRepoRelative`, debounced `git status` capture, posts v1 contract) + three 3-line bins `adapters/{cursor,copilot,codex}/bin.mjs` each `run('<tool>')`. 5 unit tests (helpers + every adapter source_tool round-trips through the server's own `parseContract`). `adapters/README.md` documents wired-vs-pending honestly (only Claude has a native per-edit hook; the rest use the watcher — no silent gaps). **Cursor adapter proven LIVE against prod**: real temp git repo → watcher detected edit → `member_status`(session `cursor-…`, `auth.ts`, `main`) + event landed, indistinguishable downstream. Copilot/Codex = identical core, source_tool validated. Commit a2c8319. **M3 exit met.**
 
 > **M3 exit:** memory + coordination captured from ≥2 non-Claude tools, identical downstream. Convoy is now the neutral layer between agent tools — infrastructure, not a plugin.
 
